@@ -1,4 +1,5 @@
 # app.py
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from config import Config
@@ -9,11 +10,9 @@ app.config.from_object(Config)
 CORS(app)
 db.init_app(app)
 
-
 with app.app_context():
     db.create_all()
 
-  
 @app.route('/')
 def home():
     return "Welcome to the Blog API! Use /api/posts, /api/register, /api/login etc."
