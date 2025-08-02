@@ -1,34 +1,32 @@
-// src/components/HomePage.jsx
-import React from "react";
-import Login from "./Login";
-import Register from "./Register";
-import PostList from "./PostList";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import './Home.css';
 
-const HomePage = () => {
+const Home = () => {
+  const [posts, setPosts] = useState([]);
+
+  useEffect(() => {
+    axios.get("http://localhost:5000/api/posts")
+      .then((res) => setPosts(res.data))
+      .catch((err) => console.error("Error fetching posts:", err));
+  }, []);
+
   return (
-    <div>
-      {/* Home section */}
-      <div id="home" style={{ padding: "40px" }}>
-        <h1>📖 Welcome to My Blog</h1>
-        <p>Explore, Write, and Read!</p>
-      </div>
-
-      {/* Login section */}
-      <div id="login" style={{ padding: "40px", scrollMarginTop: "80px" }}>
-        <Login />
-      </div>
-
-      {/* Register section */}
-      <div id="register" style={{ padding: "40px", scrollMarginTop: "80px" }}>
-        <Register />
-      </div>
-
-      {/* Add Blog section */}
-      <div id="add-blog" style={{ padding: "40px", scrollMarginTop: "80px" }}>
-        <PostList />
-      </div>
+    <div className="home-container">
+      <h2>📚 All Blog Posts</h2>
+      {posts.length === 0 ? (
+        <p>No posts found.</p>
+      ) : (
+        posts.map((post) => (
+          <div key={post.id} className="post-card">
+            <h3>{post.title}</h3>
+            <p>{post.content}</p>
+            <small>✍️ Author: {post.author}</small>
+          </div>
+        ))
+      )}
     </div>
   );
 };
 
-export default HomePage;
+export default Home;
