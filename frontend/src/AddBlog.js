@@ -1,10 +1,8 @@
-// src/AddBlog.jsx
 import React, { useState } from "react";
 import axios from "axios";
 import "./AddBlog.css";
 
-
-const AddBlog = ({ onPostAdded }) => {
+const AddBlog = () => {
   const [formData, setFormData] = useState({
     title: "",
     content: "",
@@ -29,9 +27,8 @@ const AddBlog = ({ onPostAdded }) => {
         setMessage("✅ Blog post added successfully!");
         setFormData({ title: "", content: "", author: "" });
 
-        if (onPostAdded) {
-          onPostAdded();  // parent component ला callback
-        }
+        // Refresh PostList
+        window.location.href = "/";
       })
       .catch((err) => {
         console.error("Error:", err);

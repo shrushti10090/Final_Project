@@ -8,10 +8,14 @@ from models import db, User, Post
 app = Flask(__name__)
 app.config.from_object(Config)
 CORS(app)
+
 db.init_app(app)
+
 
 with app.app_context():
     db.create_all()
+
+
 
 @app.route('/')
 def home():

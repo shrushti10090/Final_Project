@@ -1,68 +1,84 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import "./PostList.css";
 
 const PostList = () => {
-  const [posts, setPosts] = useState([
-    { id: 1, text: "🌟 Welcome to the blog!" },
-    { id: 2, text: "📰 React is awesome for building UIs." },
-    { id: 3, text: "✍️ You can register and start posting now." },
-    { id: 4, text: "🔐 Secure login and register features coming soon!" },
-    { id: 5, text: "📢 Stay tuned for backend integration with Flask!" }
-  ]);
-
+  const [posts, setPosts] = useState([]);
   const [editingId, setEditingId] = useState(null);
-  const [editedText, setEditedText] = useState("");
+  const [editedPost, setEditedPost] = useState({ title: "", content: "" });
+
+  const fetchPosts = () => {
+    axios.get("http://localhost:5000/api/posts")
+      .then((res) => setPosts(res.data.posts))
+      .catch((err) => console.error("Error fetching posts:", err));
+  };
+
+  useEffect(() => {
+    fetchPosts();
+  }, []);
 
   const handleDelete = (id) => {
-    setPosts(posts.filter((post) => post.id !== id));
+    axios.delete(`http://localhost:5000/api/posts/${id}`)
+      .then(() => fetchPosts())
+      .catch((err) => console.error("Error deleting post:", err));
   };
 
-  const handleEdit = (id, currentText) => {
-    setEditingId(id);
-    setEditedText(currentText);
+  const handleEdit = (post) => {
+    setEditingId(post.id);
+    setEditedPost({ title: post.title, content: post.content });
   };
 
-  const handleSaveEdit = () => {
-    setPosts(
-      posts.map((post) =>
-        post.id === editingId ? { ...post, text: editedText } : post
-      )
-    );
+  const handleCancel = () => {
     setEditingId(null);
-    setEditedText("");
+    setEditedPost({ title: "", content: "" });
+  };
+
+  const handleSave = () => {
+    axios.put(`http://localhost:5000/api/posts/${editingId}`, editedPost)
+      .then(() => {
+        fetchPosts();
+        setEditingId(null);
+        setEditedPost({ title: "", content: "" });
+      })
+      .catch((err) => console.error("Error updating post:", err));
   };
 
   return (
-    <div>
-      <h3>Blog Posts</h3>
-      <ul>
-        {posts.map((post) => (
-          <li key={post.id} style={{ marginBottom: "20px" }}>
-            {editingId === post.id ? (
-              <>
-                <textarea
-                  value={editedText}
-                  onChange={(e) => setEditedText(e.target.value)}
-                  rows="3"
-                  cols="50"
-                />
-                <br />
-                <button onClick={handleSaveEdit}>💾 Save</button>
-                <button onClick={() => setEditingId(null)} style={{ marginLeft: "10px" }}>
-                  ❌ Cancel
-                </button>
-              </>
-            ) : (
-              <>
-                <p>{post.text}</p>
-                <button onClick={() => handleEdit(post.id, post.text)}>✏️ Edit</button>
-                <button onClick={() => handleDelete(post.id)} style={{ marginLeft: "10px" }}>
-                  🗑️ Delete
-                </button>
-              </>
-            )}
-          </li>
-        ))}
-      </ul>
+    <div className="postlist-container">
+      <h2 style={{ textAlign: "center" }}>📚 Blog Posts</h2>
+
+      {posts.map((post) => (
+        <div className="post-card" key={post.id}>
+          {editingId === post.id ? (
+            <>
+              <input
+                type="text"
+                value={editedPost.title}
+                onChange={(e) => setEditedPost({ ...editedPost, title: e.target.value })}
+              />
+              <textarea
+                rows="4"
+                value={editedPost.content}
+                onChange={(e) => setEditedPost({ ...editedPost, content: e.target.value })}
+              />
+              <div className="btn-row">
+                <button onClick={handleSave}>💾 Save</button>
+                <button onClick={handleCancel}>❌ Cancel</button>
+              </div>
+            </>
+          ) : (
+            <>
+              <h3>{post.title}</h3>
+              <p>{post.content}</p>
+              <small><b>Author:</b> {post.author}</small>
+              <div className="btn-row">
+                <button onClick={() => handleEdit(post)}>✏️ Edit</button>
+                <button onClick={() => handleDelete(post.id)}>🗑️ Delete</button>
+              </div>
+            </>
+          )}
+        </div>
+      ))}
     </div>
   );
 };
